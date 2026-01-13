@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Hasan Productivity Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<style>
+:root {
+  --bg: #05070c;
+  --glass: rgba(255,255,255,0.08);
+  --neon: #00e5ff;
+  --neon-soft: rgba(0,229,255,0.4);
+  --text: #e8faff;
+  --danger: #ff3b3b;
+}
+
+* { box-sizing: border-box; font-family: "Segoe UI", system-ui; }
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #081526, var(--bg));
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ====== Layout ====== */
+.dashboard {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+header {
+  text-align: center;
+  font-size: 26px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px var(--neon-soft);
+  margin-bottom: 25px;
+}
+
+/* ====== Glass Panels ====== */
+.panel {
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 0 30px rgba(0,229,255,0.15);
+  padding: 18px;
+  margin-bottom: 20px;
+  transition: transform 0.3s ease;
+}
+
+.panel:hover { transform: translateY(-4px); }
+
+/* ====== Sections ====== */
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+/* ====== 3D Buttons ====== */
+.btn {
+  background: linear-gradient(145deg, #00c8ff, #008cff);
+  border: none;
+  border-radius: 12px;
+  padding: 8px 14px;
+  color: black;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow:
+    0 6px 0 #004f66,
+    0 10px 25px rgba(0,229,255,0.5);
+  transition: all 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 #004f66,
+    0 14px 30px rgba(0,229,255,0.8);
+}
+
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #004f66;
+}
+
+.btn.remove {
+  background: linear-gradient(145deg, #ff5a5a, #ff1f1f);
+  box-shadow: 0 6px 0 #7a0000;
+}
+
+/* ====== Lists ====== */
+ul { list-style: none; padding: 0; margin: 0; }
+
+li {
+  background: rgba(0,0,0,0.4);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ====== Progress ====== */
+.progress-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Radial */
+.radial {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background:
+    conic-gradient(var(--neon) 0deg,
+                   var(--neon) calc(var(--val)*1deg),
+                   rgba(255,255,255,0.1) 0deg);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 25px var(--neon-soft);
+}
+
+.radial span {
+  font-size: 22px;
+}
+
+/* Timeline */
+.timeline {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+}
+
+.dot.active {
+  background: var(--neon);
+  box-shadow: 0 0 10px var(--neon);
+}
+
+/* ====== Reminder ====== */
+.reminder {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* ====== Views ====== */
+.views {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+<div class="dashboard">
+
+<header>Hasan  productivity dashboard
+
+<div class="views">
+  <button class="btn" onclick="setView('Daily')">Daily</button>
+  <button class="btn" onclick="setView('Weekly')">Weekly</button>
+  <button class="btn" onclick="setView('Streak')">Streak</button>
+</div>
+
+<div class="panel">
+  <div class="section-title">
+    <span>📂 Work</span>
+    <button class="btn" onclick="addItem('work')">+ Add</button>
+  </div>
+  <ul id="work"></ul>
+</div>
+
+<div class="panel">
+  <div class="section-title">
+    <span>🔥 Habits</span>
+    <button class="btn" onclick="addItem('habits')">+ Add</button>
+  </div>
+  <ul id="habits"></ul>
+</div>
+
+<div class="panel">
+  <div class="section-title">
+    <span>🧠 Tasks</span>
+    <button class="btn" onclick="addItem('tasks')">+ Add</button>
+  </div>
+  <ul id="tasks"></ul>
+</div>
+
+<div class="panel">
+  <div class="section-title">📊 Progress</div>
+  <div class="progress-row">
+    <div class="radial" id="radial" style="--val:180">
+      <span id="percent">50%</span>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="section-title">🔔 Reminder</div>
+  <div class="reminder">
+    <input type="time" id="timePick">
+    <button class="btn" onclick="setReminder()">Set Reminder</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+let view = "Daily";
+
+/* ====== Items ====== */
+function addItem(type) {
+  const text = prompt("Enter item");
+  if (!text) return;
+
+  const li = document.createElement("li");
+  li.innerHTML = `
+    <span>${text}</span>
+    <button class="btn remove" onclick="this.parentElement.remove();updateProgress()">✕</button>
+  `;
+  document.getElementById(type).appendChild(li);
+  updateProgress();
+}
+
+/* ====== Views ====== */
+function setView(v) {
+  view = v;
+  alert("View switched to: " + v);
+}
+
+/* ====== Progress ====== */
+function updateProgress() {
+  const total =
+    document.querySelectorAll("li").length || 1;
+  const completed =
+    document.querySelectorAll("li").length;
+
+  const percent = Math.min(100, Math.round((completed / total) * 100));
+  document.getElementById("percent").textContent = percent + "%";
+  document.getElementById("radial").style.setProperty("--val", percent * 3.6);
+
+  const timeline = document.getElementById("timeline");
+  timeline.innerHTML = "";
+  for (let i = 0; i < 10; i++) {
+    const dot = document.createElement("div");
+    dot.className = "dot" + (i < percent / 10 ? " active" : "");
+    timeline.appendChild(dot);
+  }
+}
+updateProgress();
+
+/* ====== Notifications ====== */
+async function setReminder() {
+  if (!("Notification" in window)) {
+    alert("Notifications not supported");
+    return;
+  }
+
+  if (Notification.permission !== "granted") {
+    await Notification.requestPermission();
+  }
+
+  if (Notification.permission !== "granted") return;
+
+  const time = document.getElementById("timePick").value;
+  if (!time) return alert("Pick a time");
+
+  const [h, m] = time.split(":");
+  const now = new Date();
+  const target = new Date();
+  target.setHours(h, m, 0);
+
+  if (target < now) target.setDate(target.getDate() + 1);
+
+  const delay = target - now;
+
+  setTimeout(() => {
+    new Notification("⚡ Cyber Reminder", {
+      body: "Time to execute your mission.",
+    });
+  }, delay);
+
+  alert("Reminder set using system clock");
+}
+</script>
+</body>
+</html>
